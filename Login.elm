@@ -64,36 +64,39 @@ formDecoder =
 
 sendForm : Cmd Msg
 sendForm =
-  Http.post
-    { url = "https://jsonplaceholder.typicode.com/posts"
-    , body = Http.emptyBody
-    , expect = Http.expectJson formDecoder
-    }
+    Http.post
+        { url = "https://jsonplaceholder.typicode.com/posts"
+        , body = Http.emptyBody
+        , expect = Http.expectJson formDecoder
+        }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-      Success result  ->
-        case result of
-          Ok formdata ->
-              (Name name ->
-                   { model | name = name, validate = False }
+        Success result ->
+            case result of
+                Ok formdata ->
+                    ( case formdata of
+                        Name name ->
+                            { model | name = name, validate = False }
 
-              Email email ->
-                  { model | email = email, validate = False }
+                        Email email ->
+                            { model | email = email, validate = False }
 
-              Password password ->
-                  { model | password = password, validate = False }
+                        Password password ->
+                            { model | password = password, validate = False }
 
-              PasswordAgain passwordAgain ->
-                  { model | passwordAgain = passwordAgain, validate = False }
+                        PasswordAgain passwordAgain ->
+                            { model | passwordAgain = passwordAgain, validate = False }
 
-              Validate ->
-                  { model | validate = True }
-              , sendForm)
-          Err _ ->
-            (model, Cmd.none)
+                        Validate ->
+                            { model | validate = True }
+                    , sendForm
+                    )
+
+                Err _ ->
+                    ( model, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
