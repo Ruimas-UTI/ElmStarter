@@ -67,7 +67,7 @@ sendForm =
     Http.post
         { url = "https://jsonplaceholder.typicode.com/posts"
         , body = Http.emptyBody
-        , expect = Http.expectJson formDecoder
+        , expect = Http.expectJson Success formDecoder
         }
 
 
