@@ -39,9 +39,9 @@ init _ =
 
 
 type Msg
-    = Sending
-    | Success (Result Http.Error FormDataSent)
-    | Failure
+    = GotResponse (Result Http.Error Model)
+    | FormData FormDataSent
+    
 
 
 type FormDataSent
@@ -50,7 +50,6 @@ type FormDataSent
     | Password String
     | PasswordAgain String
     | Validate
-
 
 formDecoder : Decoder Model
 formDecoder =
@@ -67,35 +66,39 @@ sendForm =
     Http.post
         { url = "https://jsonplaceholder.typicode.com/posts"
         , body = Http.emptyBody
-        , expect = Http.expectJson Success formDecoder
+        , expect = Http.expectJson GotResponse formDecoder
         }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Success result ->
+        FormData formdata ->
+            case formdata of
+                Name name ->
+                    ( { model | name = name, validate = False }, Cmd.none )
+
+                Email email ->
+                    ( { model | email = email, validate = False }, Cmd.none )
+
+                Password password ->
+                    ( { model | password = password, validate = False }, Cmd.none )
+
+                PasswordAgain passwordAgain ->
+                    ( { model | passwordAgain = passwordAgain, validate = False }, Cmd.none )
+
+                Validate ->
+                    ( { model | validate = True }, sendForm )
+
+        GotResponse result ->
             case result of
                 Ok formdata ->
-                    ( case formdata of
-                        Name name ->
-                            { model | name = name, validate = False }
+                    ( model, Cmd.none )
 
-                        Email email ->
-                            { model | email = email, validate = False }
-
-                        Password password ->
-                            { model | password = password, validate = False }
-
-                        PasswordAgain passwordAgain ->
-                            { model | passwordAgain = passwordAgain, validate = False }
-
-                        Validate ->
-                            { model | validate = True }
-                    , sendForm
-                    )
-
-                Err _ ->
+                Err err ->
+                    let
+                        error = Debug.log "Decoding error" err
+                    in
                     ( model, Cmd.none )
 
 
@@ -111,11 +114,11 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
     div []
-        [ viewInput "text" "Name" model.name Name
-        , viewInput "Email" "Email" model.email Email
-        , viewInput "password" "Password" model.password Password
-        , viewInput "password" "Re-enter Password" model.passwordAgain PasswordAgain
-        , button [ onClick Validate ] [ text "Submit" ]
+        [ viewInput "text" "Name" model.name (\name -> FormData (Name name))
+        , viewInput "Email" "Email" model.email (\email -> FormData (Email email))
+        , viewInput "password" "Password" model.password (\password -> FormData (Password password))
+        , viewInput "password" "Re-enter Password" model.passwordAgain (\passwordAgain -> FormData (PasswordAgain passwordAgain))
+        , button [ onClick (FormData (Validate)) ] [ text "Submit" ]
         , validation model
         ]
 
@@ -140,3 +143,4 @@ validation model =
                 ( "white", " " )
     in
     div [ style "color" color ] [ text message ]
+
