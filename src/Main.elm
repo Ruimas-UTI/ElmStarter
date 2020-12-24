@@ -66,8 +66,15 @@ formData =
     Http.post
         { url = "https://jsonplaceholder.typicode.com/posts"
         , body = Http.emptyBody
-        , expect = Http.expectJson Mdc Material.Model
+        , expect = Http.expectJson Mdc
         }
+
+
+updateTextField : String -> Model
+
+
+updateTextfield text =
+    Mdc (Material.update TextField.value)
 
 
 
@@ -108,8 +115,8 @@ form model =
                 model.mdc
                 [ TextField.label "email"
                 , TextField.email
-
-                --  Options.onChange UpdateTextField
+                    Options.onChange
+                    updateTextField
                 ]
                 []
             , TextField.view Mdc
@@ -117,8 +124,8 @@ form model =
                 model.mdc
                 [ TextField.label "password"
                 , TextField.password
-
-                --  Options.onChange UpdateTextField
+                    Options.onChange
+                    updateTextField
                 ]
                 []
             , Button.view Mdc
